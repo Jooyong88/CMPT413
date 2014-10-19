@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import optparse, sys, os, logging
+import math
+from decimal import Decimal
 from collections import defaultdict
 
 optparser = optparse.OptionParser()
@@ -26,10 +28,9 @@ fe_count = defaultdict(float)
 
 fe_prob = defaultdict(float)
 iter = 0
-prev = 0
-pres = 0
-sum = 1.00000
-prevsum = 1.00000
+l_t = 0
+l_tprev = 0
+l_diff = 1.00000000000000
 ############Training the Model##################
 
 for (n, (f,e)) in enumerate(bitext):
@@ -45,12 +46,16 @@ for (n, (f,e)) in enumerate(bitext):
       e_count[e_j] = 0
       fe_count[f_i,e_j] = 0
 
-
-while (iter < 40):
+sys.stderr.write("Iteration Starts")
+while (l_diff != 0):
+  sys.stderr.write(".")
   iter += 1
-  
+   
   e_count = {x : 0 for x in e_count}
   fe_count = {x : 0 for x in fe_count}
+  l_t = 0
+  l_tprev = 0
+
 
   for (n,(f,e)) in enumerate(bitext):
     for f_i in set(f):
@@ -63,7 +68,12 @@ while (iter < 40):
         e_count[e_j] += c
 
   for (f,e) in fe_count:
+    l_tprev += math.log(fe_prob[f,e])
     fe_prob[f,e] = fe_count[f,e] / e_count[e]
+    l_t += math.log(fe_prob[f,e])
+  
+  l_diff = round(l_t,5) - round(l_tprev, 5)
+
 
     
 
